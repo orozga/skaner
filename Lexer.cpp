@@ -42,39 +42,30 @@ Token Lexer::getId() {
 }
 
 Token Lexer::getNextToken() {
-    if (curr == '\0') {
-        return Token(TokenType::EOF_TOKEN, "", column);
-    } else if (isspace(curr)) {
-        skipWhiteSpace();
-        return getNextToken();
-    } else if (isalpha(curr)) {
-        return getId();
-    } else if (isdigit(curr)) {
-        return getNumber();
-    } 
-    
+    skipWhiteSpace();
+
     int startColumn = column;
-    
-    if (curr == '+') {
-        advance();
-        return Token(TokenType::PLUS, "+", startColumn);
-    } else if (curr == '-') {
-        advance();
-        return Token(TokenType::MINUS, "-", startColumn);
-    } else if (curr == '*') {
-        advance();
-        return Token(TokenType::MULTIPLY, "*", startColumn);
-    } else if (curr == '/') {
-        advance();
-        return Token(TokenType::DIVIDE, "/", startColumn);
-    } else if (curr == '(') {
-        advance();
-        return Token(TokenType::LPAREN, "(", startColumn);
-    } else if (curr == ')') {
-        advance();
-        return Token(TokenType::RPAREN, ")", startColumn);
+    if (curr == '\0') {
+        return Token(TokenType::EOF_TOKEN, "EOF", startColumn);
     }
-    
+
+    if (isdigit(curr)) {
+        return getNumber();
+    }
+
+    if (isalpha(curr)) {
+        return getId();
+    }
+
+    switch (curr) {
+        case '+': advance(); return Token(TokenType::PLUS, "+", startColumn);
+        case '-': advance(); return Token(TokenType::MINUS, "-", startColumn);
+        case '*': advance(); return Token(TokenType::MULTIPLY, "*", startColumn);
+        case '/': advance(); return Token(TokenType::DIVIDE, "/", startColumn);
+        case '(': advance(); return Token(TokenType::LPAREN, "(", startColumn);
+        case ')': advance(); return Token(TokenType::RPAREN, ")", startColumn);
+    }
+
     string errorVal(1, curr);
     advance();
     return Token(TokenType::ERROR, errorVal, startColumn);

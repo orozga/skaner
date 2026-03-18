@@ -7,17 +7,17 @@ Token skaner(Lexer& lexer) {
     Token token = lexer.getNextToken();
     
     if (token.type == TokenType::ERROR) {
-        cerr << "-> BLAD SKANERA: Nierozpoznany znak '" << token.value 
-             << "' w kolumnie " << token.column << "!" << endl;
+        cerr << "[BLAD LEKSYKALNY] Nierozpoznany znak: '" << token.value
+             << "' w kolumnie " << token.column << endl;
     } else if (token.type != TokenType::EOF_TOKEN) {
-        cout << "-> Wczytano: " << token.toString() << endl;
+        cout << "-> " << token.toString() << endl;
     }
-    
     return token;
 }
 
 int main() {
     string expression = "2+3*(76+8/3)+ 3*(9-3)";
+    //string expression = "2 + 3 @ 5 # (7?   8)";
     cout << "Skanowanie wyrazenia: " << expression << "\n" << endl;
     
     Lexer lexer(expression);
