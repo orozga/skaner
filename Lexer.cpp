@@ -158,7 +158,6 @@ Token Lexer::getWhitespace() {
 }
 
 Token Lexer::getNextToken() {
-    int startColumn = column;
     if (curr == '\0') {
         return Token(TokenType::EOF_TOKEN, "", column);
     }
