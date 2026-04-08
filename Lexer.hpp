@@ -8,11 +8,16 @@ private:
     size_t pos;
     char curr;
     int column;
+    std::vector<Token> tokens;
 public:
     Lexer(std::string source);
     void advance();
-    void skipWhiteSpace();
     Token getNumber();
-    Token getId();
+    Token getIdentifierOrKeyword();
+    Token getStringLiteral();
+    Token getCharLiteral();
+    Token getComment();
+    Token getWhitespace();
     Token getNextToken();
+    const std::vector<Token>& getTokens();
 };
