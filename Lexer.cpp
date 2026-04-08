@@ -17,11 +17,11 @@ static const unordered_set<string> keywords = {
 };
 
 Lexer::Lexer(string source) {
-    expression = source;
+    code = source;
     pos = 0;
     row = 1;
     column = 1;
-    if (expression.length() > 0) curr = expression[pos];
+    if (code.length() > 0) curr = code[pos];
     else curr = '\0';
     tokens = vector<Token>();
 }
@@ -34,8 +34,8 @@ void Lexer::advance() {
     } else {
         column++;
     }
-    if (pos < expression.length()) {
-        curr = expression[pos];
+    if (pos < code.length()) {
+        curr = code[pos];
     } else {
         curr = '\0';
     }
@@ -191,8 +191,8 @@ Token Lexer::getNextToken() {
         t = getCharLiteral();
     } else if (curr == '/') {
         int lookaheadPos = pos + 1;
-        if (lookaheadPos < expression.length() &&
-            (expression[lookaheadPos] == '/' || expression[lookaheadPos] == '*')) {
+        if (lookaheadPos < code.length() &&
+            (code[lookaheadPos] == '/' || code[lookaheadPos] == '*')) {
             t = getComment();
         } else {
             advance();

@@ -4,7 +4,7 @@
 
 class Lexer {
 private:
-    std::string expression;
+    std::string code;
     size_t pos;
     char curr;
     int row;
