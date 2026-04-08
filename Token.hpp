@@ -6,16 +6,13 @@
 #include <cctype>
 
 enum class TokenType {
-    // Literals
     INT_LITERAL,
     STRING_LITERAL,
     CHAR_LITERAL,
 
-    // Identifiers and keywords
     IDENTIFIER,
     KEYWORD,
 
-    // Arithmetic operators
     PLUS,
     MINUS,
     MULTIPLY,
@@ -24,7 +21,6 @@ enum class TokenType {
     INCREMENT,
     DECREMENT,
 
-    // Assignment and comparison
     ASSIGN,
     EQUAL,
     NOT_EQUAL,
@@ -32,13 +28,13 @@ enum class TokenType {
     LESS_EQUAL,
     GREATER,
     GREATER_EQUAL,
+    LEFT_SHIFT,
+    RIGHT_SHIFT,
 
-    // Logical operators
     LOGICAL_AND,
     LOGICAL_OR,
     NOT,
 
-    // Punctuation
     LPAREN,
     RPAREN,
     LBRACE,
@@ -48,36 +44,35 @@ enum class TokenType {
     SEMICOLON,
     COMMA,
     DOT,
+    HASH,
+    SCOPE_RESOLUTION,
 
-    // Comments / Whitespace
     COMMENT,
     WHITESPACE,
+    NEWLINE,
 
     EOF_TOKEN,
-    ERROR,
-
-    // Compatibility aliases
-    INT = INT_LITERAL,
-    ID = IDENTIFIER
+    ERROR
 };
 
 struct Token {
     TokenType type;
     std::string value;
+    int row;
     int column;
 
-    Token(TokenType t, std::string v, int col)
-        : type(t), value(std::move(v)), column(col) {}
+    Token(TokenType t, std::string v, int r, int col)
+        : type(t), value(std::move(v)), row(r), column(col) {}
     Token() = default;
 
     std::string toString() const {
         std::string typeName;
         switch (type) {
-            case TokenType::INT_LITERAL:    typeName = "INT_LITERAL(" + value + ")"; break;
-            case TokenType::STRING_LITERAL: typeName = "STRING_LITERAL(" + value + ")"; break;
-            case TokenType::CHAR_LITERAL:   typeName = "CHAR_LITERAL('" + value + "')"; break;
-            case TokenType::IDENTIFIER:     typeName = "IDENTIFIER(" + value + ")"; break;
-            case TokenType::KEYWORD:        typeName = "KEYWORD(" + value + ")"; break;
+            case TokenType::INT_LITERAL:    typeName = "INT_LITERAL"; break;
+            case TokenType::STRING_LITERAL: typeName = "STRING_LITERAL"; break;
+            case TokenType::CHAR_LITERAL:   typeName = "CHAR_LITERAL"; break;
+            case TokenType::IDENTIFIER:     typeName = "IDENTIFIER"; break;
+            case TokenType::KEYWORD:        typeName = "KEYWORD"; break;
             case TokenType::PLUS:           typeName = "PLUS"; break;
             case TokenType::MINUS:          typeName = "MINUS"; break;
             case TokenType::MULTIPLY:       typeName = "MULTIPLY"; break;
@@ -92,6 +87,8 @@ struct Token {
             case TokenType::LESS_EQUAL:     typeName = "LESS_EQUAL"; break;
             case TokenType::GREATER:        typeName = "GREATER"; break;
             case TokenType::GREATER_EQUAL:  typeName = "GREATER_EQUAL"; break;
+            case TokenType::LEFT_SHIFT:     typeName = "LEFT_SHIFT"; break;
+            case TokenType::RIGHT_SHIFT:    typeName = "RIGHT_SHIFT"; break;
             case TokenType::LOGICAL_AND:    typeName = "LOGICAL_AND"; break;
             case TokenType::LOGICAL_OR:     typeName = "LOGICAL_OR"; break;
             case TokenType::NOT:            typeName = "NOT"; break;
@@ -104,12 +101,15 @@ struct Token {
             case TokenType::SEMICOLON:      typeName = "SEMICOLON"; break;
             case TokenType::COMMA:          typeName = "COMMA"; break;
             case TokenType::DOT:            typeName = "DOT"; break;
+            case TokenType::HASH:           typeName = "HASH"; break;
+            case TokenType::SCOPE_RESOLUTION: typeName = "SCOPE_RESOLUTION"; break;
             case TokenType::COMMENT:        typeName = "COMMENT"; break;
             case TokenType::WHITESPACE:     typeName = "WHITESPACE"; break;
+            case TokenType::NEWLINE:        typeName = "NEWLINE"; break;
             case TokenType::EOF_TOKEN:      typeName = "EOF"; break;
             case TokenType::ERROR:          typeName = "ERROR"; break;
             default:                        typeName = "UNKNOWN"; break;
         }
-        return "(" + typeName + ", '" + value + "') [kolumna: " + std::to_string(column) + "]";
+        return "(" + typeName + ", '" + value + "') [wiersz: " + std::to_string(row) + ", kolumna: " + std::to_string(column) + "]";
     }
 };

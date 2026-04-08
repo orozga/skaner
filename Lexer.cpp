@@ -19,6 +19,7 @@ static const unordered_set<string> keywords = {
 Lexer::Lexer(string source) {
     expression = source;
     pos = 0;
+    row = 1;
     column = 1;
     if (expression.length() > 0) curr = expression[pos];
     else curr = '\0';
@@ -27,7 +28,12 @@ Lexer::Lexer(string source) {
 
 void Lexer::advance() {
     pos++;
-    column++;
+    if (curr == '\n') {
+        row++;
+        column = 1;
+    } else {
+        column++;
+    }
     if (pos < expression.length()) {
         curr = expression[pos];
     } else {
@@ -37,29 +43,30 @@ void Lexer::advance() {
 
 Token Lexer::getNumber() {
     string res;
+    int startRow = row;
     int startColumn = column;
     while (curr != '\0' && isdigit(static_cast<unsigned char>(curr))) {
         res += curr;
         advance();
     }
-    return Token(TokenType::INT_LITERAL, res, startColumn);
+    return Token(TokenType::INT_LITERAL, res, startRow, startColumn);
 }
 
 Token Lexer::getIdentifierOrKeyword() {
-    string res;
-    int startColumn = column;
+    string res;    int startRow = row;    int startColumn = column;
     while (curr != '\0' && isIdentifierPart(curr)) {
         res += curr;
         advance();
     }
     if (keywords.count(res) > 0) {
-        return Token(TokenType::KEYWORD, res, startColumn);
+        return Token(TokenType::KEYWORD, res, startRow, startColumn);
     }
-    return Token(TokenType::IDENTIFIER, res, startColumn);
+    return Token(TokenType::IDENTIFIER, res, startRow, startColumn);
 }
 
 Token Lexer::getStringLiteral() {
     string res;
+    int startRow = row;
     int startColumn = column;
     res += curr;
     advance();
@@ -73,16 +80,17 @@ Token Lexer::getStringLiteral() {
             }
         } else if (curr == '"') {
             advance();
-            return Token(TokenType::STRING_LITERAL, res, startColumn);
+            return Token(TokenType::STRING_LITERAL, res, startRow, startColumn);
         }
         advance();
     }
 
-    return Token(TokenType::ERROR, res, startColumn);
+    return Token(TokenType::ERROR, res, startRow, startColumn);
 }
 
 Token Lexer::getCharLiteral() {
     string res;
+    int startRow = row;
     int startColumn = column;
     res += curr;
     advance();
@@ -102,14 +110,15 @@ Token Lexer::getCharLiteral() {
     if (curr == '\'') {
         res += curr;
         advance();
-        return Token(TokenType::CHAR_LITERAL, res, startColumn);
+        return Token(TokenType::CHAR_LITERAL, res, startRow, startColumn);
     }
 
-    return Token(TokenType::ERROR, res, startColumn);
+    return Token(TokenType::ERROR, res, startRow, startColumn);
 }
 
 Token Lexer::getComment() {
     string res;
+    int startRow = row;
     int startColumn = column;
     res += curr;
     advance();
@@ -121,7 +130,7 @@ Token Lexer::getComment() {
             res += curr;
             advance();
         }
-        return Token(TokenType::COMMENT, res, startColumn);
+        return Token(TokenType::COMMENT, res, startRow, startColumn);
     }
 
     if (curr == '*') {
@@ -141,31 +150,36 @@ Token Lexer::getComment() {
                 advance();
             }
         }
-        return Token(TokenType::COMMENT, res, startColumn);
+        return Token(TokenType::COMMENT, res, startRow, startColumn);
     }
 
-    return Token(TokenType::DIVIDE, "/", startColumn);
+    return Token(TokenType::DIVIDE, "/", startRow, startColumn);
 }
 
 Token Lexer::getWhitespace() {
     string res;
+    int startRow = row;
     int startColumn = column;
-    while (curr != '\0' && isspace(static_cast<unsigned char>(curr))) {
+    while (curr != '\0' && isspace(static_cast<unsigned char>(curr)) && curr != '\n') {
         res += curr;
         advance();
     }
-    return Token(TokenType::WHITESPACE, res, startColumn);
+    return Token(TokenType::WHITESPACE, res, startRow, startColumn);
 }
 
 Token Lexer::getNextToken() {
     if (curr == '\0') {
-        return Token(TokenType::EOF_TOKEN, "", column);
+        return Token(TokenType::EOF_TOKEN, "", row, column);
     }
 
+    int startRow = row;
     int startColumn = column;
     Token t;
 
-    if (isspace(static_cast<unsigned char>(curr))) {
+    if (curr == '\n') {
+        advance();
+        t = Token(TokenType::NEWLINE, "\n", startRow, startColumn);
+    } else if (isspace(static_cast<unsigned char>(curr))) {
         t = getWhitespace();
     } else if (isIdentifierStart(curr)) {
         t = getIdentifierOrKeyword();
@@ -182,109 +196,126 @@ Token Lexer::getNextToken() {
             t = getComment();
         } else {
             advance();
-            t = Token(TokenType::DIVIDE, "/", startColumn);
+            t = Token(TokenType::DIVIDE, "/", startRow, startColumn);
         }
     } else if (curr == '+') {
         advance();
         if (curr == '+') {
             advance();
-            t = Token(TokenType::INCREMENT, "++", startColumn);
+            t = Token(TokenType::INCREMENT, "++", startRow, startColumn);
         } else {
-            t = Token(TokenType::PLUS, "+", startColumn);
+            t = Token(TokenType::PLUS, "+", startRow, startColumn);
         }
     } else if (curr == '-') {
         advance();
         if (curr == '-') {
             advance();
-            t = Token(TokenType::DECREMENT, "--", startColumn);
+            t = Token(TokenType::DECREMENT, "--", startRow, startColumn);
         } else {
-            t = Token(TokenType::MINUS, "-", startColumn);
+            t = Token(TokenType::MINUS, "-", startRow, startColumn);
         }
     } else if (curr == '*') {
         advance();
-        t = Token(TokenType::MULTIPLY, "*", startColumn);
+        t = Token(TokenType::MULTIPLY, "*", startRow, startColumn);
     } else if (curr == '%') {
         advance();
-        t = Token(TokenType::MODULO, "%", startColumn);
+        t = Token(TokenType::MODULO, "%", startRow, startColumn);
     } else if (curr == '=') {
         advance();
         if (curr == '=') {
             advance();
-            t = Token(TokenType::EQUAL, "==", startColumn);
+            t = Token(TokenType::EQUAL, "==", startRow, startColumn);
         } else {
-            t = Token(TokenType::ASSIGN, "=", startColumn);
+            t = Token(TokenType::ASSIGN, "=", startRow, startColumn);
         }
     } else if (curr == '!') {
         advance();
         if (curr == '=') {
             advance();
-            t = Token(TokenType::NOT_EQUAL, "!=", startColumn);
+            t = Token(TokenType::NOT_EQUAL, "!=", startRow, startColumn);
         } else {
-            t = Token(TokenType::NOT, "!", startColumn);
+            t = Token(TokenType::NOT, "!", startRow, startColumn);
         }
     } else if (curr == '<') {
         advance();
-        if (curr == '=') {
+        if (curr == '<') {
             advance();
-            t = Token(TokenType::LESS_EQUAL, "<=", startColumn);
+            t = Token(TokenType::LEFT_SHIFT, "<<", startRow, startColumn);
+        } else if (curr == '=') {
+            advance();
+            t = Token(TokenType::LESS_EQUAL, "<=", startRow, startColumn);
         } else {
-            t = Token(TokenType::LESS, "<", startColumn);
+            t = Token(TokenType::LESS, "<", startRow, startColumn);
         }
     } else if (curr == '>') {
         advance();
-        if (curr == '=') {
+        if (curr == '>') {
             advance();
-            t = Token(TokenType::GREATER_EQUAL, ">=", startColumn);
+            t = Token(TokenType::RIGHT_SHIFT, ">>", startRow, startColumn);
+        } else if (curr == '=') {
+            advance();
+            t = Token(TokenType::GREATER_EQUAL, ">=", startRow, startColumn);
         } else {
-            t = Token(TokenType::GREATER, ">", startColumn);
+            t = Token(TokenType::GREATER, ">", startRow, startColumn);
         }
     } else if (curr == '&') {
         advance();
         if (curr == '&') {
             advance();
-            t = Token(TokenType::LOGICAL_AND, "&&", startColumn);
+            t = Token(TokenType::LOGICAL_AND, "&&", startRow, startColumn);
         } else {
-            t = Token(TokenType::ERROR, "&", startColumn);
+            t = Token(TokenType::ERROR, "&", startRow, startColumn);
         }
     } else if (curr == '|') {
         advance();
         if (curr == '|') {
             advance();
-            t = Token(TokenType::LOGICAL_OR, "||", startColumn);
+            t = Token(TokenType::LOGICAL_OR, "||", startRow, startColumn);
         } else {
-            t = Token(TokenType::ERROR, "|", startColumn);
+            t = Token(TokenType::ERROR, "|", startRow, startColumn);
         }
     } else if (curr == '(') {
         advance();
-        t = Token(TokenType::LPAREN, "(", startColumn);
+        t = Token(TokenType::LPAREN, "(", startRow, startColumn);
     } else if (curr == ')') {
         advance();
-        t = Token(TokenType::RPAREN, ")", startColumn);
+        t = Token(TokenType::RPAREN, ")", startRow, startColumn);
     } else if (curr == '{') {
         advance();
-        t = Token(TokenType::LBRACE, "{", startColumn);
+        t = Token(TokenType::LBRACE, "{", startRow, startColumn);
     } else if (curr == '}') {
         advance();
-        t = Token(TokenType::RBRACE, "}", startColumn);
+        t = Token(TokenType::RBRACE, "}", startRow, startColumn);
     } else if (curr == '[') {
         advance();
-        t = Token(TokenType::LBRACKET, "[", startColumn);
+        t = Token(TokenType::LBRACKET, "[", startRow, startColumn);
     } else if (curr == ']') {
         advance();
-        t = Token(TokenType::RBRACKET, "]", startColumn);
+        t = Token(TokenType::RBRACKET, "]", startRow, startColumn);
     } else if (curr == ';') {
         advance();
-        t = Token(TokenType::SEMICOLON, ";", startColumn);
+        t = Token(TokenType::SEMICOLON, ";", startRow, startColumn);
     } else if (curr == ',') {
         advance();
-        t = Token(TokenType::COMMA, ",", startColumn);
+        t = Token(TokenType::COMMA, ",", startRow, startColumn);
     } else if (curr == '.') {
         advance();
-        t = Token(TokenType::DOT, ".", startColumn);
+        t = Token(TokenType::DOT, ".", startRow, startColumn);
+    } else if (curr == '#') {
+        advance();
+        t = Token(TokenType::HASH, "#", startRow, startColumn);
+    } else if (curr == ':') {
+        advance();
+        if (curr == ':') {
+            advance();
+            t = Token(TokenType::SCOPE_RESOLUTION, "::", startRow, startColumn);
+        } else {
+            t = Token(TokenType::ERROR, ":", startRow, startColumn);
+        }
     } else {
         string errorVal(1, curr);
         advance();
-        t = Token(TokenType::ERROR, errorVal, startColumn);
+        t = Token(TokenType::ERROR, errorVal, startRow, startColumn);
     }
 
     tokens.push_back(t);

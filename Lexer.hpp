@@ -7,6 +7,7 @@ private:
     std::string expression;
     size_t pos;
     char curr;
+    int row;
     int column;
     std::vector<Token> tokens;
 public:

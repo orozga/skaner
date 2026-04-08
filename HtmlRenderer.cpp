@@ -45,6 +45,8 @@ string HtmlRenderer::generateColoredHTML(const vector<Token>& tokens) {
             case TokenType::LESS_EQUAL:
             case TokenType::GREATER:
             case TokenType::GREATER_EQUAL:
+            case TokenType::LEFT_SHIFT:
+            case TokenType::RIGHT_SHIFT:
             case TokenType::LOGICAL_AND:
             case TokenType::LOGICAL_OR:
             case TokenType::NOT:
@@ -59,12 +61,15 @@ string HtmlRenderer::generateColoredHTML(const vector<Token>& tokens) {
             case TokenType::SEMICOLON:
             case TokenType::COMMA:
             case TokenType::DOT:
+            case TokenType::HASH:
+            case TokenType::SCOPE_RESOLUTION:
                 cssClass = "token-punct";
                 break;
             case TokenType::COMMENT:
                 cssClass = "token-comment";
                 break;
             case TokenType::WHITESPACE:
+            case TokenType::NEWLINE:
                 cssClass = "token-whitespace";
                 break;
             default:                        cssClass = ""; break;
