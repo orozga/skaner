@@ -1,4 +1,4 @@
-# 🔍 Skaner i Syntax Highlighter
+# Skaner i Syntax Highlighter
 
 Skaner napisany w języku C++, służący do analizy składniowej uproszczonego języka programowania. Program przetwarza kod źródłowy na ciąg tokenów, a następnie generuje w pełni sformatowany i pokolorowany plik wynikowy w formacie HTML, zachowując oryginalny układ tekstu.
 
